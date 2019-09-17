@@ -19,5 +19,5 @@ func main() {
 	fmt.Println(cfg.TypeOf())
 
 	log := logme.NewLogme(cfg)
-	log.Debug("hello world", "12345", http.StatusOK)
+	log.Debug("hello world", "12345")
 }
