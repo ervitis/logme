@@ -6,3 +6,4 @@ This is a simple logger using [logrus](https://github.com/sirupsen/logrus).
 
 - Implement yaml config
 - Implement json config
+- Implement error trace using pkg error
