@@ -9,7 +9,7 @@ import (
 )
 
 type JsonLoad struct {
-	cfg *ConfigLoad
+	ConfigLoader
 }
 
 type logJson struct {
@@ -75,25 +75,5 @@ func NewJsonLogme(pathJson string) (*JsonLoad, error) {
 		fields:     data.Fields,
 		output:     out,
 	}
-	return &JsonLoad{cfg: c}, nil
-}
-
-func (e *JsonLoad) GetLogLevel() logrus.Level {
-	return e.cfg.level
-}
-
-func (e *JsonLoad) GetFixedFields() map[string]interface{} {
-	return e.cfg.fields
-}
-
-func (e *JsonLoad) GetOutputFormatter() logrus.Formatter {
-	return e.cfg.formatter
-}
-
-func (e *JsonLoad) GetOutput() io.Writer {
-	return e.cfg.output
-}
-
-func (e *JsonLoad) TypeOf() string {
-	return e.cfg.loaderType
+	return &JsonLoad{ c}, nil
 }

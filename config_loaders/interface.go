@@ -20,3 +20,23 @@ type ConfigLoader interface {
 	TypeOf() string
 	GetOutput() io.Writer
 }
+
+func (e *ConfigLoad) GetLogLevel() logrus.Level {
+	return e.level
+}
+
+func (e *ConfigLoad) GetFixedFields() map[string]interface{} {
+	return e.fields
+}
+
+func (e *ConfigLoad) GetOutputFormatter() logrus.Formatter {
+	return e.formatter
+}
+
+func (e *ConfigLoad) GetOutput() io.Writer {
+	return e.output
+}
+
+func (e *ConfigLoad) TypeOf() string {
+	return e.loaderType
+}

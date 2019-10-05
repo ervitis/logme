@@ -20,7 +20,7 @@ const (
 )
 
 type EnvLoad struct {
-	cfg *ConfigLoad
+	ConfigLoader
 }
 
 func NewEnvLogme() (*EnvLoad, error) {
@@ -69,25 +69,5 @@ func NewEnvLogme() (*EnvLoad, error) {
 		output:     out,
 	}
 	m = nil
-	return &EnvLoad{cfg: c}, nil
-}
-
-func (e *EnvLoad) GetLogLevel() logrus.Level {
-	return e.cfg.level
-}
-
-func (e *EnvLoad) GetFixedFields() map[string]interface{} {
-	return e.cfg.fields
-}
-
-func (e *EnvLoad) GetOutputFormatter() logrus.Formatter {
-	return e.cfg.formatter
-}
-
-func (e *EnvLoad) GetOutput() io.Writer {
-	return e.cfg.output
-}
-
-func (e *EnvLoad) TypeOf() string {
-	return e.cfg.loaderType
+	return &EnvLoad{ c}, nil
 }

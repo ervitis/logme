@@ -9,7 +9,7 @@ import (
 )
 
 type YamlLoad struct {
-	cfg *ConfigLoad
+	ConfigLoader
 }
 
 type logYaml struct {
@@ -75,25 +75,5 @@ func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
 		fields:     data.Fields,
 		output:     out,
 	}
-	return &YamlLoad{cfg: c}, nil
-}
-
-func (e *YamlLoad) GetLogLevel() logrus.Level {
-	return e.cfg.level
-}
-
-func (e *YamlLoad) GetFixedFields() map[string]interface{} {
-	return e.cfg.fields
-}
-
-func (e *YamlLoad) GetOutputFormatter() logrus.Formatter {
-	return e.cfg.formatter
-}
-
-func (e *YamlLoad) GetOutput() io.Writer {
-	return e.cfg.output
-}
-
-func (e *YamlLoad) TypeOf() string {
-	return e.cfg.loaderType
+	return &YamlLoad{ c}, nil
 }
