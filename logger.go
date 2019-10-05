@@ -5,15 +5,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Logme struct {
-	log  *logrus.Entry
-	cfg  loader.ConfigLoader
-}
+type (
+	Logme struct {
+		log         *logrus.Entry
+		cfg         loader.ConfigLoader
+		cacheFields logrus.Fields
+	}
+)
 
 const (
-	traceField     = "traceId"
-	componentField = "component"
-	serviceField   = "service"
+	traceField = "traceId"
 )
 
 type Loggerme interface {
@@ -32,8 +33,8 @@ func NewLogme(cfg loader.ConfigLoader) *Logme {
 	l.SetFormatter(cfg.GetOutputFormatter())
 
 	return &Logme{
-		log: logrus.NewEntry(l),
-		cfg: cfg,
+		log:         logrus.NewEntry(l),
+		cfg:         cfg,
 	}
 }
 
@@ -53,14 +54,25 @@ func (l *Logme) Warn(message, traceId string) {
 	l.log.WithFields(l.addFields(map[string]interface{}{traceField: traceId})).Warn(message)
 }
 
-func (l *Logme) Error(message, traceId string) {
+func (l *Logme) Error(message, traceId string) *logrus.Entry {
 	l.log.WithFields(l.addFields(map[string]interface{}{traceField: traceId})).Error(message)
+	return l.log
 }
 
 func (l *Logme) addFields(fields map[string]interface{}) logrus.Fields {
-	return logrus.Fields{
-		traceField:     fields[traceField],
-		componentField: l.cfg.GetFixedFields()[componentField],
-		serviceField:   l.cfg.GetFixedFields()[serviceField],
+	if l.cacheFields == nil {
+		l.cacheFields = make(logrus.Fields, len(fields) + len(l.cfg.GetFixedFields()))
 	}
+
+	for k, v := range fields {
+		if _, ok := l.cacheFields[k]; !ok {
+			l.cacheFields[k] = v
+		}
+	}
+	for k, v := range l.cfg.GetFixedFields() {
+		if _, ok := l.cacheFields[k]; !ok {
+			l.cacheFields[k] = v
+		}
+	}
+	return l.cacheFields
 }

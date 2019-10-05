@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/ervitis/logme"
 	"github.com/ervitis/logme/config_loaders"
-	"net/http"
-	"os"
 )
 
 func main() {
