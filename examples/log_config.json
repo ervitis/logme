@@ -1,0 +1,13 @@
+{
+  "level": "DEBUG",
+  "fields": {
+    "componentName": "value component",
+    "serviceName": "value service"
+  },
+  "format": {
+    "type": "json"
+  },
+  "output": {
+    "type": "stdout"
+  }
+}

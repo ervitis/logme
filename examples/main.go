@@ -36,4 +36,18 @@ func main() {
 	log = logme.NewLogme(cfg2)
 
 	log.Info("hello world 2", "3420702")
+
+	path, err = filepath.Abs("examples/log_config.json")
+	if err != nil {
+		panic(err)
+	}
+
+	cfg3, err := config_loaders.NewJsonLogme(path)
+	if err != nil {
+		panic(err)
+	}
+
+	log = logme.NewLogme(cfg3)
+
+	log.Debug("hello world 3", "5353462546")
 }
