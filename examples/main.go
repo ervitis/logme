@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ervitis/logme"
 	"github.com/ervitis/logme/config_loaders"
@@ -20,4 +21,19 @@ func main() {
 
 	log := logme.NewLogme(cfg)
 	log.Debug("hello world", "12345")
+
+	path, err := filepath.Abs("examples/log_config.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	cfg2, err := config_loaders.NewYamlLogme(path)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(cfg2.TypeOf())
+	log = logme.NewLogme(cfg2)
+
+	log.Info("hello world 2", "3420702")
 }
