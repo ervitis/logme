@@ -6,37 +6,25 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type YamlLoad struct {
 	cfg *ConfigLoad
 }
 
-/*
-logger:
-	level:
-	fields:
-		- field1
-		- field2
-	format:
-		type: json|txt
-	output:
-		type:
- */
-func parseYaml(pathYaml string) ([]byte, error) {
-	type y struct {
-		L string `yaml:"level"`
-		F []string `yaml:"fields"`
-		Fo struct {
-			T string `yaml:"type"`
-		} `yaml:"format"`
-		O struct {
-			T string `yaml:"type"`
-		} `yaml:"output"`
-	}
+type logYaml struct {
+	Level string `yaml:"level"`
+	Fields map[string]interface{} `yaml:"fields"`
+	Format struct {
+		Type string `yaml:"type"`
+	} `yaml:"format"`
+	Output struct {
+		Type string `yaml:"type"`
+	} `yaml:"output"`
+}
 
-	data := y{}
+func parseYaml(pathYaml string) (*logYaml, error) {
+	data := logYaml{}
 
 	b, err := ioutil.ReadFile(pathYaml)
 	if err != nil {
@@ -47,42 +35,28 @@ func parseYaml(pathYaml string) ([]byte, error) {
 		return nil, err
 	}
 
-	return yaml.Marshal(data)
+	return &data, nil
 }
 
 func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
-	var data map[string]interface{}
-
-	b, err := parseYaml(pathYaml)
+	data, err := parseYaml(pathYaml)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := yaml.Unmarshal(b, &data); err != nil {
-		return nil, err
-	}
-
-	lvl, err := logrus.ParseLevel(data["level"].(string))
+	lvl, err := logrus.ParseLevel(data.Level)
 	if err != nil {
 		return nil, err
-	}
-
-	s := os.Getenv(logFieldsEnv)
-	d := strings.Split(s[1:len(s)-1], ",")
-	m := make(map[string]interface{})
-	for _, v := range d {
-		n := strings.Split(v, "=")
-		m[n[0]] = n[1]
 	}
 
 	var out io.Writer
-	switch os.Getenv(logOutputType) {
+	switch data.Output.Type {
 	default:
 		out = os.Stdout
 	}
 
 	var frmt logrus.Formatter
-	switch os.Getenv(logFormatTypeEnv) {
+	switch data.Format.Type {
 	case "json":
 		frmt = &logrus.JSONFormatter{}
 	default:
@@ -95,13 +69,12 @@ func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
 	}
 
 	c := &ConfigLoad{
-		loaderType: "environment",
+		loaderType: "yaml",
 		level:      lvl,
 		formatter:  frmt,
-		fields:     m,
+		fields:     data.Fields,
 		output:     out,
 	}
-	m = nil
 	return &YamlLoad{cfg: c}, nil
 }
 
