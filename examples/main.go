@@ -20,7 +20,7 @@ func main() {
 	fmt.Println(cfg.TypeOf())
 
 	log := logme.NewLogme(cfg)
-	log.Debug("hello world", "12345")
+	log.Debug("hello world", logme.Metadata{TraceID: "12345"})
 
 	path, err := filepath.Abs("examples/log_config.yaml")
 	if err != nil {
@@ -35,7 +35,7 @@ func main() {
 	fmt.Println(cfg2.TypeOf())
 	log = logme.NewLogme(cfg2)
 
-	log.Info("hello world 2", "3420702")
+	log.Info("hello world 2")
 
 	path, err = filepath.Abs("examples/log_config.json")
 	if err != nil {
@@ -49,5 +49,5 @@ func main() {
 
 	log = logme.NewLogme(cfg3)
 
-	log.Debug("hello world 3", "5353462546")
+	log.Debug("hello world 3")
 }
