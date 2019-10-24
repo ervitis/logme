@@ -18,6 +18,8 @@ type (
 	Metadata struct {
 		TraceID string
 	}
+
+	Hook logrus.Hook
 )
 
 const (
@@ -31,7 +33,7 @@ type Loggerme interface {
 	Error(message string, metadata ...Metadata) *logrus.Entry
 }
 
-func NewLogme(cfg loader.ConfigLoader, hooks ...logrus.Hook) Loggerme {
+func NewLogme(cfg loader.ConfigLoader, hooks ...Hook) Loggerme {
 	l := logrus.New()
 	l.SetOutput(cfg.GetOutput())
 	l.SetLevel(cfg.GetLogLevel())

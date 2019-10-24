@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/ervitis/logme/hooks"
 
 	"github.com/ervitis/logme"
 	"github.com/ervitis/logme/config_loaders"
@@ -47,7 +50,11 @@ func main() {
 		panic(err)
 	}
 
-	log = logme.NewLogme(cfg3)
+	myHooks := []logme.Hook{
+		hooks.NewStackHook(),
+	}
+	log = logme.NewLogme(cfg3, myHooks...)
 
 	log.Debug("hello world 3")
+	log.Error("oh no...").WithError(errors.New("ups"))
 }
