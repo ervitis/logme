@@ -55,18 +55,7 @@ func NewJsonLogme(pathJson string) (*JsonLoad, error) {
 		out = os.Stdout
 	}
 
-	var frmt logrus.Formatter
-	switch data.Format.Type {
-	case "json":
-		frmt = &logrus.JSONFormatter{}
-	default:
-		frmt = &logrus.TextFormatter{
-			DisableColors:          true,
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-			FieldMap:               logrus.FieldMap{logrus.FieldKeyTime: "@timestamp"},
-		}
-	}
+	frmt := CommonFormatter(data.Format.Type)
 
 	c := &ConfigLoad{
 		loaderType: "json",

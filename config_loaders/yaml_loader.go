@@ -13,7 +13,7 @@ type YamlLoad struct {
 }
 
 type logYaml struct {
-	Level string `yaml:"level"`
+	Level  string                 `yaml:"level"`
 	Fields map[string]interface{} `yaml:"fields"`
 	Format struct {
 		Type string `yaml:"type"`
@@ -55,18 +55,7 @@ func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
 		out = os.Stdout
 	}
 
-	var frmt logrus.Formatter
-	switch data.Format.Type {
-	case "json":
-		frmt = &logrus.JSONFormatter{}
-	default:
-		frmt = &logrus.TextFormatter{
-			DisableColors:          true,
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-			FieldMap:               logrus.FieldMap{logrus.FieldKeyTime: "@timestamp"},
-		}
-	}
+	frmt := CommonFormatter(data.Format.Type)
 
 	c := &ConfigLoad{
 		loaderType: "yaml",
@@ -75,5 +64,5 @@ func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
 		fields:     data.Fields,
 		output:     out,
 	}
-	return &YamlLoad{ c}, nil
+	return &YamlLoad{c}, nil
 }

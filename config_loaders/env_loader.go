@@ -48,18 +48,7 @@ func NewEnvLogme() (*EnvLoad, error) {
 		out = os.Stdout
 	}
 
-	var frmt logrus.Formatter
-	switch os.Getenv(logFormatTypeEnv) {
-	case "json":
-		frmt = &logrus.JSONFormatter{}
-	default:
-		frmt = &logrus.TextFormatter{
-			DisableColors:          true,
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-			FieldMap:               logrus.FieldMap{logrus.FieldKeyTime: "@timestamp"},
-		}
-	}
+	frmt := CommonFormatter(os.Getenv(logFormatTypeEnv))
 
 	c := &ConfigLoad{
 		loaderType: "environment",
@@ -69,5 +58,5 @@ func NewEnvLogme() (*EnvLoad, error) {
 		output:     out,
 	}
 	m = nil
-	return &EnvLoad{ c}, nil
+	return &EnvLoad{c}, nil
 }
