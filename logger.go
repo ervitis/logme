@@ -31,6 +31,7 @@ type Loggerme interface {
 	Info(message string, metadata ...Metadata)
 	Warn(message string, metadata ...Metadata)
 	Error(message string, metadata ...Metadata) *logrus.Entry
+	L() *logrus.Entry
 }
 
 func NewLogme(cfg loader.ConfigLoader, hooks ...Hook) Loggerme {
@@ -99,4 +100,8 @@ func (l *Logme) addFields(fields map[string]interface{}) logrus.Fields {
 		}
 	}
 	return l.cacheFields
+}
+
+func (l *Logme) L() *logrus.Entry {
+	return l.log
 }
