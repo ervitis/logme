@@ -12,6 +12,18 @@ import (
 	"github.com/ervitis/logme/config_loaders"
 )
 
+func func1(l logme.Loggerme) {
+	func2(l)
+}
+
+func func2(l logme.Loggerme) {
+	func3(l)
+}
+
+func func3(log logme.Loggerme) {
+	log.L(logme.Metadata{TraceID: "87654"}).WithError(errors.New("ups")).Errorf("i am inside a function")
+}
+
 func main() {
 	_ = os.Setenv("LOG_LEVEL", "DEBUG")
 	_ = os.Setenv("LOG_FIELDS", "[component=example,service=example]")
@@ -23,7 +35,7 @@ func main() {
 	fmt.Println(cfg.TypeOf())
 
 	log := logme.NewLogme(cfg)
-	log.Debug("hello world", logme.Metadata{TraceID: "12345"})
+	log.L(logme.Metadata{TraceID: "12345"}).Debug("hello world")
 
 	path, err := filepath.Abs("examples/log_config.yaml")
 	if err != nil {
@@ -36,9 +48,9 @@ func main() {
 	}
 
 	fmt.Println(cfg2.TypeOf())
-	log = logme.NewLogme(cfg2)
+	log2 := logme.NewLogme(cfg2).L()
 
-	log.Info("hello world 2")
+	log2.Info("hello world 2")
 
 	path, err = filepath.Abs("examples/log_config.json")
 	if err != nil {
@@ -55,6 +67,10 @@ func main() {
 	}
 	log = logme.NewLogme(cfg3, myHooks...)
 
-	log.Debug("hello world 3")
-	log.Error("oh no...").WithError(errors.New("ups"))
+	log2.Debug("hello world 3")
+	log2.Error("oh no...")
+	log.L().Info("hi!!")
+	log.L(logme.Metadata{TraceID: "129999345678"}).WithError(errors.New("ups")).Errorf("something is broken")
+
+	func1(log)
 }

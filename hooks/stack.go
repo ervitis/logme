@@ -39,7 +39,7 @@ func (h *StackHook) Fire(e *logrus.Entry) error {
 	frames := stack.Callers(skipFrames)
 
 	for _, frame := range frames {
-		if !strings.Contains(frame.File, "sirupsen/logrus") && !strings.Contains(frame.File, "log") {
+		if !strings.Contains(frame.File, "sirupsen/logrus") && !strings.Contains(frame.File,"hooks/stack.go") {
 			st = append(st, frame)
 		}
 	}

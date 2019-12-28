@@ -3,35 +3,26 @@ package logme
 import (
 	loader "github.com/ervitis/logme/config_loaders"
 	"github.com/sirupsen/logrus"
+	"reflect"
 	"sync"
 )
 
 type (
 	Logme struct {
-		log         *logrus.Entry
-		cfg         loader.ConfigLoader
-		cacheFields logrus.Fields
-		mutex       sync.Mutex
-		metadata    *Metadata
+		log      *logrus.Entry
+		mutex    sync.Mutex
+		metadata *Metadata
 	}
 
 	Metadata struct {
-		TraceID string
+		TraceID string `logme:"traceId"`
 	}
 
 	Hook logrus.Hook
 )
 
-const (
-	traceField = "traceId"
-)
-
 type Loggerme interface {
-	Debug(message string, metadata ...Metadata)
-	Info(message string, metadata ...Metadata)
-	Warn(message string, metadata ...Metadata)
-	Error(message string, metadata ...Metadata) *logrus.Entry
-	L() *logrus.Entry
+	L(metadata ...Metadata) *logrus.Entry
 }
 
 func NewLogme(cfg loader.ConfigLoader, hooks ...Hook) Loggerme {
@@ -45,8 +36,7 @@ func NewLogme(cfg loader.ConfigLoader, hooks ...Hook) Loggerme {
 	}
 
 	return &Logme{
-		log: logrus.NewEntry(l),
-		cfg: cfg,
+		log: logrus.NewEntry(l).WithFields(cfg.GetFixedFields()),
 	}
 }
 
@@ -63,45 +53,30 @@ func (l *Logme) getMetadata(metadata ...Metadata) {
 	l.mutex.Unlock()
 }
 
-func (l *Logme) Debug(message string, metadata ...Metadata) {
+func (l *Logme) L(metadata ...Metadata) *logrus.Entry {
 	l.getMetadata(metadata...)
-	l.log.WithFields(l.addFields(map[string]interface{}{traceField: l.metadata.TraceID})).Debug(message)
+	return l.log.WithFields(l.addFields())
 }
 
-func (l *Logme) Info(message string, metadata ...Metadata) {
-	l.getMetadata(metadata...)
-	l.log.WithFields(l.addFields(map[string]interface{}{traceField: l.metadata.TraceID})).Info(message)
-}
-
-func (l *Logme) Warn(message string, metadata ...Metadata) {
-	l.getMetadata(metadata...)
-	l.log.WithFields(l.addFields(map[string]interface{}{traceField: l.metadata.TraceID})).Warn(message)
-}
-
-func (l *Logme) Error(message string, metadata ...Metadata) *logrus.Entry {
-	l.getMetadata(metadata...)
-	l.log.WithFields(l.addFields(map[string]interface{}{traceField: l.metadata.TraceID})).Error(message)
-	return l.log
-}
-
-func (l *Logme) addFields(fields map[string]interface{}) logrus.Fields {
-	if l.cacheFields == nil {
-		l.cacheFields = make(logrus.Fields, len(fields)+len(l.cfg.GetFixedFields()))
+func (l *Logme) addFields() logrus.Fields {
+	rv := reflect.ValueOf(l.metadata)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
 	}
 
-	for k, v := range fields {
-		if _, ok := l.cacheFields[k]; !ok && v != "" {
-			l.cacheFields[k] = v
+	fields := make(map[string]interface{}, 0)
+
+	for i := 0; i < rv.NumField(); i++ {
+		if rv.Field(i).IsZero() {
+			continue
 		}
-	}
-	for k, v := range l.cfg.GetFixedFields() {
-		if _, ok := l.cacheFields[k]; !ok {
-			l.cacheFields[k] = v
-		}
-	}
-	return l.cacheFields
-}
 
-func (l *Logme) L() *logrus.Entry {
-	return l.log
+		t := rv.Type().Field(i).Tag.Get("logme")
+		if t == "" {
+			t = rv.Type().Field(i).Name
+		}
+		fields[t] = rv.Field(i).Interface()
+	}
+
+	return fields
 }
