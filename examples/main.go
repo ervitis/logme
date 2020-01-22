@@ -21,7 +21,7 @@ func func2(l logme.Loggerme) {
 }
 
 func func3(log logme.Loggerme) {
-	log.L(logme.Metadata{TraceID: "87654"}).WithError(errors.New("ups")).Errorf("i am inside a function")
+	log.L().WithError(errors.New("ups")).Errorf("i am inside a function")
 }
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	fmt.Println(cfg.TypeOf())
 
 	log := logme.NewLogme(cfg)
-	log.L(logme.Metadata{TraceID: "12345"}).Debug("hello world")
+	log.L().WithField("traceID", "111111111").Debug("hello world")
 
 	path, err := filepath.Abs("examples/log_config.yaml")
 	if err != nil {
@@ -70,7 +70,7 @@ func main() {
 	log2.Debug("hello world 3")
 	log2.Error("oh no...")
 	log.L().Info("hi!!")
-	log.L(logme.Metadata{TraceID: "129999345678"}).WithError(errors.New("ups")).Errorf("something is broken")
+	log.L().WithField("traceId", "9999999999").WithError(errors.New("ups")).Errorf("something is broken")
 
 	func1(log)
 }
