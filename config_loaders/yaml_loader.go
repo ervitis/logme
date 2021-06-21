@@ -1,68 +1,38 @@
 package config_loaders
 
 import (
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-	"io"
-	"io/ioutil"
+	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
-type YamlLoad struct {
-	ConfigLoader
+type (
+	YamlLoader struct {
+		model *LoaderModel
+		Path  string
+	}
+)
+
+func NewYamlLoader() (*YamlLoader, error) {
+	return &YamlLoader{}, nil
 }
 
-type logYaml struct {
-	Level  string                 `yaml:"level"`
-	Fields map[string]interface{} `yaml:"fields"`
-	Format struct {
-		Type string `yaml:"type"`
-	} `yaml:"format"`
-	Output struct {
-		Type string `yaml:"type"`
-	} `yaml:"output"`
+func (e *YamlLoader) GetPath() string {
+	return e.Path
 }
 
-func parseYaml(pathYaml string) (*logYaml, error) {
-	data := logYaml{}
-
-	b, err := ioutil.ReadFile(pathYaml)
-	if err != nil {
-		return nil, err
+func (e *YamlLoader) SetPath(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("yaml loader error set path: %w", err)
 	}
-
-	if err := yaml.Unmarshal(b, &data); err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+	e.Path = path
+	return nil
 }
 
-func NewYamlLogme(pathYaml string) (*YamlLoad, error) {
-	data, err := parseYaml(pathYaml)
-	if err != nil {
-		return nil, err
-	}
+func (e *YamlLoader) Marshal(data interface{}) ([]byte, error) {
+	return yaml.Marshal(data)
+}
 
-	lvl, err := logrus.ParseLevel(data.Level)
-	if err != nil {
-		return nil, err
-	}
-
-	var out io.Writer
-	switch data.Output.Type {
-	default:
-		out = os.Stdout
-	}
-
-	frmt := CommonFormatter(data.Format.Type)
-
-	c := &ConfigLoad{
-		loaderType: "yaml",
-		level:      lvl,
-		formatter:  frmt,
-		fields:     data.Fields,
-		output:     out,
-	}
-	return &YamlLoad{c}, nil
+func (e *YamlLoader) Unmarshal(in []byte, out interface{}) error {
+	return yaml.Unmarshal(in, out)
 }

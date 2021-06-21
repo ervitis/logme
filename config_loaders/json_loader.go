@@ -2,67 +2,37 @@ package config_loaders
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
+	"fmt"
 	"os"
 )
 
-type JsonLoad struct {
-	ConfigLoader
+type (
+	JsonLoader struct {
+		model *LoaderModel
+		Path  string
+	}
+)
+
+func NewJsonLoader() (*JsonLoader, error) {
+	return &JsonLoader{}, nil
 }
 
-type logJson struct {
-	Level string `json:"level"`
-	Fields map[string]interface{} `json:"fields"`
-	Format struct {
-		Type string `json:"type"`
-	} `json:"format"`
-	Output struct {
-		Type string `json:"type"`
-	} `json:"output"`
+func (e *JsonLoader) GetPath() string {
+	return e.Path
 }
 
-func parseJson(pathJson string) (*logJson, error) {
-	data := logJson{}
-
-	b, err := ioutil.ReadFile(pathJson)
-	if err != nil {
-		return nil, err
+func (e *JsonLoader) SetPath(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("json loader error set path: %w", err)
 	}
-
-	if err := json.Unmarshal(b, &data); err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+	e.Path = path
+	return nil
 }
 
-func NewJsonLogme(pathJson string) (*JsonLoad, error) {
-	data, err := parseJson(pathJson)
-	if err != nil {
-		return nil, err
-	}
+func (e *JsonLoader) Marshal(data interface{}) ([]byte, error) {
+	return json.Marshal(data)
+}
 
-	lvl, err := logrus.ParseLevel(data.Level)
-	if err != nil {
-		return nil, err
-	}
-
-	var out io.Writer
-	switch data.Output.Type {
-	default:
-		out = os.Stdout
-	}
-
-	frmt := CommonFormatter(data.Format.Type)
-
-	c := &ConfigLoad{
-		loaderType: "json",
-		level:      lvl,
-		formatter:  frmt,
-		fields:     data.Fields,
-		output:     out,
-	}
-	return &JsonLoad{ c}, nil
+func (e *JsonLoader) Unmarshal(in []byte, out interface{}) error {
+	return json.Unmarshal(in, out)
 }

@@ -1,62 +1,96 @@
 package config_loaders
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"io"
 	"os"
-	"regexp"
 	"strings"
 )
 
-const (
-	logLevelEnv      = "LOG_LEVEL"
-	logFieldsEnv     = "LOG_FIELDS"
-	logFormatTypeEnv = "LOG_FORMAT_TYPE"
-	logOutputType    = "LOG_OUTPUT_TYPE"
-
-	regex = `^\[((\w+\=\w+)+\,?)+\]$`
+type (
+	EnvLoader struct {
+		model *LoaderModel
+	}
 )
 
-type EnvLoad struct {
-	ConfigLoader
+func NewEnvLoader() (*EnvLoader, error) {
+	loader := &EnvLoader{}
+	if err := loader.Init(); err != nil {
+		return nil, fmt.Errorf("error loading env variables %w", err)
+	}
+
+	return &EnvLoader{
+		model: loader.model,
+	}, nil
 }
 
-func NewEnvLogme() (*EnvLoad, error) {
-	lvl, err := logrus.ParseLevel(os.Getenv(logLevelEnv))
-	if err != nil {
-		return nil, err
+var (
+	LogLevelEmptyErr = "%s is empty"
+)
+
+const (
+	LogLevel            = "LOG_LEVEL"
+	LogEncoding         = "LOG_ENCODING"
+	LogOutputpaths      = "LOG_OUTPUTPATHS"
+	LogErroroutputpaths = "LOG_ERROROUTPUTPATHS"
+	LogInitialfields    = "LOG_INITIALFIELDS"
+)
+
+func (e *EnvLoader) Init() error {
+	v := os.Getenv(LogLevel)
+	if v == "" {
+		return fmt.Errorf(LogLevelEmptyErr, LogLevel)
+	}
+	e.model.Level = v
+
+	v = os.Getenv(LogEncoding)
+	if v == "" {
+		return fmt.Errorf(LogLevelEmptyErr, LogEncoding)
+	}
+	e.model.Encoding = v
+
+	v = os.Getenv(LogOutputpaths)
+	if v == "" {
+		return fmt.Errorf(LogLevelEmptyErr, LogOutputpaths)
+	}
+	e.model.OutputPaths = strings.Split(v, ",")
+
+	v = os.Getenv(LogErroroutputpaths)
+	if v == "" {
+		return fmt.Errorf(LogLevelEmptyErr, LogErroroutputpaths)
+	}
+	e.model.ErrorOutputPaths = strings.Split(v, ",")
+
+	v = os.Getenv(LogInitialfields)
+	if v == "" {
+		return fmt.Errorf(LogLevelEmptyErr, LogInitialfields)
+	}
+	iflds := make(map[string]string)
+	for _, m := range strings.Split(v, ",") {
+		for _, n := range strings.Split(m, "=") {
+			iflds[n] = n
+		}
+	}
+	if len(iflds) > 0 {
+		e.model.InitialFields = iflds
 	}
 
-	f, _ := regexp.Compile(regex)
-	if !f.MatchString(os.Getenv(logFieldsEnv)) {
-		return nil, errors.New(fmt.Sprintf("%s environment variable empty", logFieldsEnv))
-	}
+	return nil
+}
 
-	s := os.Getenv(logFieldsEnv)
-	d := strings.Split(s[1:len(s)-1], ",")
-	m := make(map[string]interface{})
-	for _, v := range d {
-		n := strings.Split(v, "=")
-		m[n[0]] = n[1]
-	}
+func (e *EnvLoader) GetPath() string {
+	return ""
+}
 
-	var out io.Writer
-	switch os.Getenv(logOutputType) {
-	default:
-		out = os.Stdout
-	}
+func (e *EnvLoader) SetPath(_ string) error {
+	return nil
+}
 
-	frmt := CommonFormatter(os.Getenv(logFormatTypeEnv))
+func (e *EnvLoader) Marshal(_ interface{}) ([]byte, error) {
+	return json.Marshal(e.model)
+}
 
-	c := &ConfigLoad{
-		loaderType: "environment",
-		level:      lvl,
-		formatter:  frmt,
-		fields:     m,
-		output:     out,
-	}
-	m = nil
-	return &EnvLoad{c}, nil
+func (e *EnvLoader) Unmarshal(_ []byte, out interface{}) error {
+	out = e.model
+	return nil
 }
