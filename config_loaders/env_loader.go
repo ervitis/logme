@@ -31,8 +31,7 @@ var (
 const (
 	LogLevel            = "LOG_LEVEL"
 	LogEncoding         = "LOG_ENCODING"
-	LogOutputpaths      = "LOG_OUTPUTPATHS"
-	LogErroroutputpaths = "LOG_ERROROUTPUTPATHS"
+	LogOutputpath      = "LOG_OUTPUTPATH"
 	LogInitialfields    = "LOG_INITIALFIELDS"
 )
 
@@ -49,17 +48,11 @@ func (e *EnvLoader) Init() error {
 	}
 	e.model.Encoding = v
 
-	v = os.Getenv(LogOutputpaths)
+	v = os.Getenv(LogOutputpath)
 	if v == "" {
-		return fmt.Errorf(LogLevelEmptyErr, LogOutputpaths)
+		return fmt.Errorf(LogLevelEmptyErr, LogOutputpath)
 	}
-	e.model.OutputPaths = strings.Split(v, ",")
-
-	v = os.Getenv(LogErroroutputpaths)
-	if v == "" {
-		return fmt.Errorf(LogLevelEmptyErr, LogErroroutputpaths)
-	}
-	e.model.ErrorOutputPaths = strings.Split(v, ",")
+	e.model.Output = v
 
 	v = os.Getenv(LogInitialfields)
 	if v == "" {

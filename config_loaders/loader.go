@@ -7,11 +7,10 @@ import (
 
 type (
 	LoaderModel struct {
-		Level            string            `json:"level" yaml:"level"`
-		Encoding         string            `json:"encoding" yaml:"encoding"`
-		OutputPaths      []string          `json:"outputPaths,omitempty" yaml:"outputPaths"`
-		ErrorOutputPaths []string          `json:"errorOutputPaths" yaml:"errorOutputPaths"`
-		InitialFields    map[string]string `json:"initialFields" yaml:"initialFields"`
+		Level         string            `json:"level" yaml:"level"`
+		Encoding      string            `json:"encoding" yaml:"encoding"`
+		Output        string            `json:"output,omitempty" yaml:"output,omitempty"`
+		InitialFields map[string]string `json:"initialFields,omitempty" yaml:"initialFields,omitempty"`
 	}
 
 	Loader interface {
@@ -22,11 +21,19 @@ type (
 	}
 
 	LoggermeConfig struct {
-		Path string
+		Path   string
+		loader Loader
 	}
 )
 
+func NewLoggermeConfig(loader Loader) *LoggermeConfig {
+	return &LoggermeConfig{loader: loader}
+}
+
 func (lc *LoggermeConfig) OpenFile(path string) ([]byte, error) {
+	if path == "" {
+		return nil, nil
+	}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("open config file error: %w", err)
@@ -34,14 +41,14 @@ func (lc *LoggermeConfig) OpenFile(path string) ([]byte, error) {
 	return data, nil
 }
 
-func (lc *LoggermeConfig) LoggermeConfigLoader(loader Loader) (*LoaderModel, error) {
-	data, err := lc.OpenFile(loader.GetPath())
+func (lc *LoggermeConfig) LoggermeConfigLoader() (*LoaderModel, error) {
+	data, err := lc.OpenFile(lc.loader.GetPath())
 	if err != nil {
 		return nil, fmt.Errorf("error opening file: %w", err)
 	}
-	var model *LoaderModel
-	if err := loader.Unmarshal(data, model); err != nil {
+	var model LoaderModel
+	if err := lc.loader.Unmarshal(data, &model); err != nil {
 		return nil, fmt.Errorf("error unmarshaling data: %w", err)
 	}
-	return model, nil
+	return &model, nil
 }

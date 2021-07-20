@@ -1,8 +1,6 @@
-level: DEBUG
-fields:
+level: debug
+initialFields:
   component: value1
   service: value2
-format:
-  type: json
-output:
-  type: stdout
+encoding: json
+output: stdout

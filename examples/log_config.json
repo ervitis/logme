@@ -1,13 +1,9 @@
 {
   "level": "DEBUG",
-  "fields": {
+  "initialFields": {
     "componentName": "value component",
     "serviceName": "value service"
   },
-  "format": {
-    "type": "json"
-  },
-  "output": {
-    "type": "stdout"
-  }
+  "encoding": "json",
+  "output": "stdout"
 }
