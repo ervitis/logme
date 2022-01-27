@@ -1,4 +1,4 @@
-module github.com/ervitis/logme
+module github.com/ervitis/logme/v1
 
 go 1.12
 
