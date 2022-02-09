@@ -3,7 +3,6 @@ package zaplogger
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 	"strings"
 )
 
@@ -38,10 +37,10 @@ func filterLevel(level zapcore.Level) func(core zapcore.Core) zapcore.Core {
 
 func parseLevel(level string) zapcore.Level {
 	level = strings.ToUpper(level)
-	levels := map[string]zapcore.Level {
+	levels := map[string]zapcore.Level{
 		"DEBUG": zapcore.DebugLevel,
-		"INFO": zapcore.InfoLevel,
-		"WARN": zapcore.WarnLevel,
+		"INFO":  zapcore.InfoLevel,
+		"WARN":  zapcore.WarnLevel,
 		"ERROR": zapcore.ErrorLevel,
 	}
 	if lvl, exists := levels[level]; !exists {
@@ -53,7 +52,7 @@ func parseLevel(level string) zapcore.Level {
 
 func parseEncoder(encoder string) zapcore.Encoder {
 	encoder = strings.ToUpper(encoder)
-	encoders := map[string]zapcore.Encoder {
+	encoders := map[string]zapcore.Encoder{
 		"JSON": zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 		"TEXT": zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig()),
 	}
@@ -61,19 +60,6 @@ func parseEncoder(encoder string) zapcore.Encoder {
 		return zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
 	} else {
 		return codec
-	}
-}
-
-func parseOutput(output string) *os.File {
-	output = strings.ToUpper(output)
-	outputs := map[string]*os.File {
-		"STDOUT": os.Stdout,
-		"STDERR": os.Stderr,
-	}
-	if out, exists := outputs[output]; !exists {
-		return os.Stdout
-	} else {
-		return out
 	}
 }
 

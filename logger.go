@@ -5,7 +5,6 @@ import "github.com/ervitis/logme/v2/config_loaders"
 type (
 	Loggerme struct {
 		logWrap *Wrapper
-		opts    *configLoader
 	}
 
 	configLoader struct {
